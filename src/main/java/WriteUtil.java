@@ -20,8 +20,11 @@ public class WriteUtil {
         FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(fileName);
+            //使用InputStream读取文件的长度
             len = inputStream.available();
+            //构建文件长度大小的byte数组
             bytes = new byte[len];
+            //将文件中的内容读取到byte数组中
             inputStream.read(bytes);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -42,21 +45,31 @@ public class WriteUtil {
     public List<String> WriteBlockFile(int threadNumber, String outBlockFolderName){
         int blockLen = len / (threadNumber - 1);
         int lastLen = len % (threadNumber - 1);
+        //创建线程数为threadNumber的线程池
         ExecutorService executorService = Executors.newFixedThreadPool(threadNumber);
         List<String> pathList = new ArrayList<>();
         for(int i = 0;i < threadNumber;i++){
             String outFileName_ = outBlockFolderName + "/outBlock_" + (i+1) + ".txt";
             pathList.add(outFileName_);
             byte[] outBytes;
+            /*
+            对最后一块线程进行单独处理
+             */
             if(i == threadNumber - 1){
                 outBytes = new byte[lastLen];
+                //使用System的arraycopy方法将byte数组中起始位置为blockLen*i，长度为lastLen的内容
+                // 写到outbyte数组起始位置为0的地方
                 System.arraycopy(bytes,blockLen*i,outBytes,0,lastLen);
             }else {
                 outBytes = new byte[blockLen];
+                //使用System的arraycopy方法将byte数组中起始位置为blockLen*i，长度为blockLen的内容
+                // 写到outbyte数组起始位置为0的地方
                 System.arraycopy(bytes,blockLen*i,outBytes,0,blockLen);
             }
+            //利用线程池提交task，将输出文件名和输出byte数组大小传入WriterBlockTask中
             executorService.submit(new WriterBlockTask(outFileName_,outBytes));
         }
+        //关闭线程
         executorService.shutdown();
         //System.out.println(blockLen+":"+lastLen);
         return pathList;

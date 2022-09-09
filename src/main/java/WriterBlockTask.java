@@ -21,7 +21,9 @@ public class WriterBlockTask implements Runnable{
     public void run() {
         FileOutputStream outputStream = null;
         try {
+            //使用OutputStream读取targetPath路径
             outputStream = new FileOutputStream(targetPath);
+            //将路径为targetPath的文件中内容写入byte数组中
             outputStream.write(bytes);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
