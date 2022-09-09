@@ -78,12 +78,19 @@ public class WriteUtil {
     /*
     大文件合并
      */
-    public void mergeBigFile(List<String> pathList, String outBlockFolderName, String outPath)
-            throws IOException {
+    public void mergeBigFile(List<String> pathList, String outBlockFolderName, String outPath) throws IOException {
+        /*
+        创建RandomAccessFile对象，指定输出路径和模式
+            r	以只读的方式打开文本，也就意味着不能用write来操作文件
+            rw	读操作和写操作都是允许的
+            rws	每当进行写操作，同步的刷新到磁盘，刷新内容和元数据
+            rwd	每当进行写操作，同步的刷新到磁盘，刷新内容
+         */
         RandomAccessFile randomAccessFile = new RandomAccessFile(outPath, "rw");
         try {
             long startIndex = 0L;
             for (String path : pathList) {
+                //找到对应索引位置
                 randomAccessFile.seek(startIndex);
                 FileInputStream fileInputStream = null;
                 try {
@@ -93,6 +100,7 @@ public class WriteUtil {
                     fileInputStream.read(bytes);
                     //写入
                     randomAccessFile.write(bytes);
+                    //更新startIndex索引位置
                     startIndex += available;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -103,6 +111,7 @@ public class WriteUtil {
                 }
             }
         } finally {
+            //将先前生成的块删除
             File file = new File(outBlockFolderName);
             for(File fi:file.listFiles()){
                 fi.delete();
